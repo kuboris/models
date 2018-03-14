@@ -142,7 +142,7 @@ def get_synth_input_fn():
 class Cifar10Model(resnet_model.Model):
 
   def __init__(self, resnet_size, data_format=None, num_classes=_NUM_CLASSES,
-      version=resnet_model.DEFAULT_VERSION):
+               version=resnet_model.DEFAULT_VERSION, use_fp16=False):
     """These are the parameters that work for CIFAR-10 data.
 
     Args:
@@ -174,6 +174,7 @@ class Cifar10Model(resnet_model.Model):
         block_strides=[1, 2, 2],
         final_size=64,
         version=version,
+        use_fp16=use_fp16,
         data_format=data_format)
 
 
@@ -198,15 +199,19 @@ def cifar10_model_fn(features, labels, mode, params):
   def loss_filter_fn(name):
     return True
 
-  return resnet_run_loop.resnet_model_fn(features, labels, mode, Cifar10Model,
-                                         resnet_size=params['resnet_size'],
-                                         weight_decay=weight_decay,
-                                         learning_rate_fn=learning_rate_fn,
-                                         momentum=0.9,
-                                         data_format=params['data_format'],
-                                         version=params['version'],
-                                         loss_filter_fn=loss_filter_fn,
-                                         multi_gpu=params['multi_gpu'])
+  return resnet_run_loop.resnet_model_fn(
+      features, labels, mode, Cifar10Model,
+      resnet_size=params['resnet_size'],
+      weight_decay=weight_decay,
+      learning_rate_fn=learning_rate_fn,
+      momentum=0.9,
+      data_format=params['data_format'],
+      version=params['version'],
+      use_fp16=params["use_fp16"],
+      fp16_loss_scale=params["fp16_loss_scale"],
+      loss_filter_fn=loss_filter_fn,
+      multi_gpu=params['multi_gpu']
+  )
 
 
 def main(argv):
